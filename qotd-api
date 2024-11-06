@@ -1,0 +1,136 @@
+#!/bin/bash
+
+#### qotd-api revision 4####
+### define vars & check for required folders ###
+
+api="https://api.api-ninjas.com/v1/quotes?"
+if [ ! -d /home/$USER/qotdapi ]; then
+echo "making folders..."
+mkdir /home/$USER/qotdapi
+touch /home/$USER/qotdapi/count
+touch /home/$USER/qotdapi/key
+echo 0 > /home/$USER/qotdapi/count
+echo "done! run qotd-api -k to enter you api key"
+fi 
+cdir="/home/$USER/qotdapi/count"
+count=$(cat $cdir)
+keydir="/home/$USER/qotdapi/key"
+key=$(cat $keydir)
+
+### define functions ###
+
+Help()
+{
+   echo "Syntax: qotdapi [-h|-k|-c|-r]"
+   echo "options:"
+   echo "h     print this help"
+   echo "k     api key setup"
+   echo "c     shows counted api calls"
+   echo "r     resets the api call counter"
+   echo "Get an api key for free at api-ninjas.com"
+}
+add()
+{
+temp=$(($count+1))
+echo $temp > $cdir
+}
+reset()
+{
+temp=0
+echo $temp > $cdir
+}
+### define options ###
+
+while getopts ":hkcr" option; do
+   case $option in
+	r)# reset call counter
+		reset
+		exit;;
+	c)# display counted api calls
+		echo "you have called the api $count times, you are at $count / 10000 calls"
+		echo "your limit resets every month, use qotd-api -r to reset it"
+		exit;;
+	k)# edit/enter api key
+		echo "enter api key:"
+		read tempkey
+		echo $tempkey > /home/$USER/qotdapi/key
+		echo "done!"
+		exit;;
+	h)# display help
+		Help
+		exit;;
+   esac
+done
+
+### start randomizer ###
+
+random=$((1 + $RANDOM % 20))
+if [ "$random" = 1 ]; then
+cat="category=age"
+fi
+if [ "$random" = 2 ]; then
+cat="category=alone"
+fi
+if [ "$random" = 3 ]; then
+cat="category=amazing"
+fi
+if [ "$random" = 4 ]; then
+cat="category=anger"
+fi
+if [ "$random" = 5 ]; then
+cat="category=art"
+fi
+if [ "$random" = 6 ]; then
+cat="category=attitude"
+fi
+if [ "$random" = 7 ]; then
+cat="category=beauty"
+fi
+if [ "$random" = 8 ]; then
+cat="category=best"
+fi
+if [ "$random" = 9 ]; then
+cat="category=business"
+fi
+if [ "$random" = 10 ]; then
+cat="category=change"
+fi
+if [ "$random" = 11 ]; then
+cat="category=communication"
+fi
+if [ "$random" = 12 ]; then
+cat="category=computers"
+fi
+if [ "$random" = 13 ]; then
+cat="category=cool"
+fi
+if [ "$random" = 14 ]; then
+cat="category=courage"
+fi
+if [ "$random" = 15 ]; then
+cat="category=dad"
+fi
+if [ "$random" = 16 ]; then
+cat="category=dating"
+fi
+if [ "$random" = 17 ]; then
+cat="category=death"
+fi
+if [ "$random" = 18 ]; then
+cat="category=design"
+fi
+if [ "$random" = 19 ]; then
+cat="category=dreams"
+fi
+if [ "$random" = 20 ]; then
+cat="category=education"
+fi
+
+### send request 2 api and also parse ###
+
+add
+request="$api$cat"
+output=$(curl -s -H "X-Api-Key: $key" $request | tr --delete [] | jq -C '.quote')
+echo "$output"
+
+
